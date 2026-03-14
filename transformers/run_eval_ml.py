@@ -15,9 +15,9 @@ torch.set_float32_matmul_precision('high')
 
 def main(args):
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
-        args.MODEL_ID, torch_dtype=torch.bfloat16, attn_implementation="sdpa"
+        args.model_id, dtype=torch.bfloat16, attn_implementation="sdpa"
     ).to(args.device)
-    processor = AutoProcessor.from_pretrained(args.MODEL_ID)
+    processor = AutoProcessor.from_pretrained(args.model_id)
     model_input_name = processor.model_input_names[0]
 
     gen_kwargs = {"max_new_tokens": args.max_new_tokens}
@@ -26,7 +26,7 @@ def main(args):
     if getattr(model.generation_config, "is_multilingual", False):
         gen_kwargs["task"] = "transcribe"
     else:
-        print(f"Warning: Model {args.MODEL_ID} is not multilingual.")
+        print(f"Warning: Model {args.model_id} is not multilingual.")
 
     CONFIG_NAME = args.config_name
     SPLIT_NAME = args.split
@@ -38,11 +38,11 @@ def main(args):
     # Load dataset
     print(f"Loading dataset: {args.dataset} with config: {CONFIG_NAME}")
     dataset = load_filtered_dataset(
-        dataset=args.dataset,
-        config=CONFIG_NAME,
+        args.dataset,
+        CONFIG_NAME,
         split=SPLIT_NAME,
-        language=args.language,
         streaming=args.streaming,
+        token=True,
     )
     dataset = dataset.cast_column("audio", Audio(sampling_rate=16000))
 
@@ -108,14 +108,13 @@ def main(args):
         for _ in tqdm(warmup_dataset, desc="Warming up..."):
             continue
 
-
     # Reload dataset for actual evaluation (reset streaming pointer)
     dataset = load_filtered_dataset(
-        dataset=args.dataset,
-        config=CONFIG_NAME,
+        args.dataset,
+        CONFIG_NAME,
         split=SPLIT_NAME,
-        language=args.language,
         streaming=args.streaming,
+        token=True,
     )
     dataset = dataset.cast_column("audio", Audio(sampling_rate=16000))
 
@@ -145,7 +144,7 @@ def main(args):
     manifest_path = data_utils.write_manifest(
         all_results["references"],
         all_results["predictions"],
-        args.MODEL_ID,
+        args.model_id,
         args.dataset,
         CONFIG_NAME,
         args.split,
@@ -171,14 +170,6 @@ if __name__ == "__main__":
         required=True,
         help="Model identifier. Should be loadable with Transformers",
     )
-
-    parser.add_argument(
-        "--language",
-        type=str,
-        default=None,
-        help="Filter dataset rows by language column.",
-    )
-
     parser.add_argument(
         "--dataset",
         type=str,
