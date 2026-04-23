@@ -218,3 +218,108 @@ def load_and_prepare_dataset(args, warmup=False):
 
     return dataset, normalizer
 
+# Fleurs-SLU: Belebele-fleurs evaluation
+import base64
+import io
+import soundfile as sf
+import librosa
+import numpy as np
+
+
+def select_audio_based_on_strategy(sentence_chunk: dict, total_audios: int, strategy: str, language:str) -> int:
+
+    if total_audios == 0:
+        raise ValueError("No audio available in sentence chunk.")
+
+    if strategy == "random":
+        random_audio_idx = int(np.random.randint(total_audios))
+        audios = sentence_chunk.get("selected_audio", [])
+        selected_audio = audios[random_audio_idx]
+        return selected_audio
+
+    # CER STRATEGY
+    # https://huggingface.co/datasets/WueNLP/belebele-fleurs
+    # Modifications made from the code provided in the README.
+    seamless_unsupported = {"ast_Latn", "hau_Latn", "kam_Latn", "kea_Latn", "lin_Latn",
+                            "mri_Latn", "nso_Latn", "oci_Latn", "tgl_Latn", "umb_Latn",
+                            "wol_Latn", "xho_Latn"}
+
+    whisper_unsupported = {"ast_Latn", "ceb_Latn", "ckb_Arab", "fuv_Latn", "gle_Latn",
+                           "ibo_Latn", "kam_Latn", "kea_Latn", "kir_Cyrl", "lug_Latn",
+                           "luo_Latn", "nso_Latn", "tgl_Latn", "umb_Latn", "wol_Latn",
+                           "xho_Latn", "zul_Latn"}
+
+    if language in whisper_unsupported:
+        cer_scores = [sentence_chunk["seamlessm4t_asr_cer"]]
+    elif language in seamless_unsupported:
+        cer_scores = [sentence_chunk["whisper_asr_cer"]]
+    else:
+        cer_scores = [sentence_chunk["whisper_asr_cer"], sentence_chunk["seamlessm4t_asr_cer"]]
+
+    averaged_cer_scores = np.stack(cer_scores).mean(axis=0)
+    if strategy == "best":
+        best_audio_idx = int(np.argmin(averaged_cer_scores))
+        audios = sentence_chunk.get("selected_audio", [])
+        selected_audio = audios[best_audio_idx]
+
+        return selected_audio
+    if strategy == "worst":
+        worst_audio_idx = int(np.argmax(averaged_cer_scores))
+        audios = sentence_chunk.get("selected_audio", [])
+        selected_audio = audios[worst_audio_idx]
+        return selected_audio
+
+
+def concatenate_audios(audios: list, target_sample_rate:int) -> np.ndarray | None:
+    processed_signal = []
+    for audio in audios:
+        signal, sr = audio["array"], audio["sampling_rate"]
+
+        if signal.ndim > 1:
+            signal = signal.mean(axis=1)
+
+        if sr != target_sample_rate:
+            signal = librosa.resample(signal, orig_sr=sr, target_sr=target_sample_rate)
+
+        processed_signal.append(signal)
+    concatenated_audio = np.concatenate(processed_signal, axis=0)
+
+    return concatenated_audio
+
+def audio_array_to_base64(concatenated_audio: np.ndarray) -> str:
+    buffer_wav = io.BytesIO()
+    sf.write(file=buffer_wav, data=concatenated_audio, samplerate=16_000, format="WAV")
+    wav_bytes = buffer_wav.getvalue()
+    audio_base64 = base64.b64encode(wav_bytes).decode("utf-8")
+
+    return audio_base64
+
+def preprocess_sentence_data(example:list[dict], strategy:str, language:str, target_sampling_rate: int):
+    sentence_data = example["sentence_data"]
+    sorted_sentence_chunks = sorted(sentence_data, key=lambda x: x["id"])
+    audios = [select_audio_based_on_strategy(chunk, strategy=strategy, language=language) for chunk in sorted_sentence_chunks]
+    concatenated_audio = concatenate_audios(audios, target_sample_rate=target_sampling_rate)
+    example["audio"] = concatenated_audio
+
+    return example
+
+def load_and_prepare_dataset_slu(args, warmup=False):
+    dataset = load_dataset(args.dataset_path, args.dataset, split=args.split, streaming=True)
+    dataset = dataset.map(preprocess_sentence_data, args.strategy, args.language, args.target_sampling_rate)
+    dataset = dataset.remove_columns(["sentence_data"])
+
+    if warmup:
+        num = args.warmup_steps * args.batch_size
+        if args.streaming:
+            dataset = dataset.take(num)
+        return dataset
+
+    if args.max_eval_samples:
+        print(f'Subsampling dataset to first {args.max_eval_samples} samples!')
+        if args.streaming:
+            dataset = dataset.take(args.max_eval_samples)
+
+    if args.max_audio_seconds:
+        dataset = dataset.filter(lambda example: len(example["audio"]) / args.target_sampling_rate <= args.max_audio_seconds)
+
+    return dataset
