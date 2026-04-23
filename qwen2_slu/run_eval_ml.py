@@ -122,6 +122,10 @@ def load_model_and_processor(args):
 
 
 def build_qa_prompt(batch: dict[str, list[Any]], idx: int) -> str:
+
+    # Initial prompts inspired from:
+    #https://github.com/OpenBMB/UltraEval-Audio/blob/main/registry/prompt/choice.yaml
+    # Tested: Qwen2-Audio 7B (8-bit quantization)
     qa_prompt = (
         f"{batch['question'][idx]}\n"
         f"A) {batch['mc_answer1'][idx]}\n"
