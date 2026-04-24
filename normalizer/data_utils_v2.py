@@ -226,14 +226,18 @@ import librosa
 import numpy as np
 
 
-def select_audio_based_on_strategy(sentence_chunk: dict, total_audios: int, strategy: str, language:str) -> int:
+def select_audio_based_on_strategy(sentence_chunk: dict, strategy: str, language:str) -> int:
 
-    if total_audios == 0:
-        raise ValueError("No audio available in sentence chunk.")
+    audios = sentence_chunk.get("audio", [])
+    total_audios = len(audios)
 
     if strategy == "random":
         random_audio_idx = int(np.random.randint(total_audios))
-        audios = sentence_chunk.get("selected_audio", [])
+        selected_audio = audios[random_audio_idx]
+        return selected_audio
+
+    if strategy == "random":
+        random_audio_idx = int(np.random.randint(total_audios))
         selected_audio = audios[random_audio_idx]
         return selected_audio
 
@@ -259,13 +263,11 @@ def select_audio_based_on_strategy(sentence_chunk: dict, total_audios: int, stra
     averaged_cer_scores = np.stack(cer_scores).mean(axis=0)
     if strategy == "best":
         best_audio_idx = int(np.argmin(averaged_cer_scores))
-        audios = sentence_chunk.get("selected_audio", [])
         selected_audio = audios[best_audio_idx]
-
         return selected_audio
+
     if strategy == "worst":
         worst_audio_idx = int(np.argmax(averaged_cer_scores))
-        audios = sentence_chunk.get("selected_audio", [])
         selected_audio = audios[worst_audio_idx]
         return selected_audio
 
@@ -305,7 +307,7 @@ def preprocess_sentence_data(example:list[dict], strategy:str, language:str, tar
 
 def load_and_prepare_dataset_slu(args, warmup=False):
     dataset = load_dataset(args.dataset_path, args.dataset, split=args.split, streaming=True)
-    dataset = dataset.map(preprocess_sentence_data, args.strategy, args.language, args.target_sampling_rate)
+    dataset = dataset.map(preprocess_sentence_data,fn_kwargs={"strategy": args.strategy, "language": args.language, "target_sampling_rate": args.target_sampling_rate})
     dataset = dataset.remove_columns(["sentence_data"])
 
     if warmup:
