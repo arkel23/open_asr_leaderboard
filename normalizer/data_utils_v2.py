@@ -94,6 +94,8 @@ def get_text(sample):
         return sample['question']
     elif 'meta_info' in sample:
         return sample['meta_info']
+    elif "Sentiment" in sample:
+        return sample["Sentiment"]
     else:
         raise ValueError(
             f"Expected transcript column of either 'text', 'sentence', 'normalized_text' or 'transcript'. Got sample of "
@@ -154,7 +156,7 @@ def load_data(
 
 
 def prepare_data(
-        dataset, dataset_path, audio_col_name='audio',
+        dataset, dataset_path=None, audio_col_name='audio',
         english=True, chinese=False, sampling_rate=16_000
     ):
     print('Dataset info: ', dataset, dataset_path, audio_col_name, english, chinese)

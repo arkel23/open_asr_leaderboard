@@ -1,0 +1,46 @@
+{
+  "os": "macOS-15.7.3-arm64-arm-64bit",
+  "python": "CPython 3.12.13",
+  "startedAt": "2026-03-23T18:07:52.084469Z",
+  "args": [
+    "--model_id=mistralai/Voxtral-Mini-3B-2507",
+    "--dataset_path=TwinkStart/MELD",
+    "--split=test",
+    "--device=-1",
+    "--batch_size=3",
+    "--max_eval_samples=12",
+    "--wandb_entity=LisTAya",
+    "--wandb_project=voxtral_sentiment"
+  ],
+  "program": "/Users/girishe/Documents/github_repos/open_asr_leaderboard/voxtral_copy/run_eval_sentiment.py",
+  "codePath": "voxtral_copy/run_eval_sentiment.py",
+  "codePathLocal": "run_eval_sentiment.py",
+  "git": {
+    "remote": "git@github.com:arkel23/open_asr_leaderboard.git",
+    "commit": "7b405827e61d4edccef7007c7a6c817b9d2a4886"
+  },
+  "email": "ewoorkargirish@gmail.com",
+  "root": "/Users/girishe/Documents/github_repos/open_asr_leaderboard/voxtral_copy",
+  "host": "Girishs-MacBook-Pro.local",
+  "executable": "/Users/girishe/Documents/github_repos/open_asr_leaderboard/voxtral_copy/openvox/bin/python",
+  "cpu_count": 12,
+  "cpu_count_logical": 12,
+  "disk": {
+    "/": {
+      "total": "494384795648",
+      "used": "108975513600"
+    }
+  },
+  "memory": {
+    "total": "25769803776"
+  },
+  "apple": {
+    "name": "Apple M4 Pro",
+    "ecpuCores": 4,
+    "pcpuCores": 8,
+    "gpuCores": 16,
+    "memoryGb": 24,
+    "ramTotalBytes": "25769803776"
+  },
+  "writerId": "klnxjoy8b877y7cen484y66a9b12b7y3"
+}

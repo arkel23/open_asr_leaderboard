@@ -1,4 +1,4 @@
-from datasets import load_dataset, Audio
+from datasets import load_dataset, Audio,  IterableDataset
 from normalizer import EnglishTextNormalizer, BasicMultilingualTextNormalizer
 
 from .eval_utils import read_manifest, write_manifest
@@ -22,6 +22,8 @@ def get_text(sample):
         return sample["transcript"]
     elif "transcription" in sample:
         return sample["transcription"]
+    elif "Sentiment" in sample:
+        return sample["Sentiment"]
     else:
         raise ValueError(
             f"Expected transcript column of either 'text', 'sentence', 'normalized_text' or 'transcript'. Got sample of "
@@ -40,22 +42,35 @@ def normalize(batch):
 
 
 def load_data(args):
-    dataset = load_dataset(
+    if args.dataset is None:
+        dataset = load_dataset(
         args.dataset_path,
-        args.dataset,
         split=args.split,
         streaming=args.streaming,
         token=True,
     )
+    else: 
+        dataset = load_dataset(
+            args.dataset_path,
+            args.dataset,
+            split=args.split,
+            streaming=args.streaming,
+            token=True,
+        )
 
     return dataset
+
 
 def prepare_data(dataset):
     # Re-sample to 16kHz and normalise transcriptions
     dataset = dataset.cast_column("audio", Audio(sampling_rate=16000))
     # Use writer_batch_size=1 to avoid pyarrow offset overflow with large audio blobs
-    dataset = dataset.map(normalize, writer_batch_size=1)
-    dataset = dataset.filter(is_target_text_in_range, input_columns=["norm_text"], writer_batch_size=1)
+    if isinstance(dataset, IterableDataset):     # this change if streaming is set to true 
+        dataset = dataset.map(normalize)
+        dataset = dataset.filter(is_target_text_in_range, input_columns=["norm_text"])
+    else:
+        dataset = dataset.map(normalize, writer_batch_size=1)
+        dataset = dataset.filter(is_target_text_in_range, input_columns=["norm_text"], writer_batch_size=1)
 
     return dataset
 

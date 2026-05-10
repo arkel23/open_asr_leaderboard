@@ -1,0 +1,63 @@
+_wandb:
+    value:
+        cli_version: 0.25.1
+        e:
+            kn9qux147clu4ckgs4o32siepdryatt6:
+                apple:
+                    ecpuCores: 4
+                    gpuCores: 16
+                    memoryGb: 24
+                    name: Apple M4 Pro
+                    pcpuCores: 8
+                    ramTotalBytes: "25769803776"
+                cpu_count: 12
+                cpu_count_logical: 12
+                disk:
+                    /:
+                        total: "494384795648"
+                        used: "123276922880"
+                email: ewoorkargirish@gmail.com
+                executable: /Users/girishe/Documents/github_repos/open_asr_leaderboard/voxtral_copy/openvox/bin/python
+                git:
+                    commit: c48797208f46225c4d8f4985521d679c6cc2ec96
+                    remote: git@github.com:arkel23/open_asr_leaderboard.git
+                host: Girishs-MacBook-Pro.local
+                memory:
+                    total: "25769803776"
+                os: macOS-15.7.3-arm64-arm-64bit
+                program: <python with no main file>
+                python: CPython 3.12.13
+                root: /Users/girishe/Documents/github_repos/open_asr_leaderboard
+                startedAt: "2026-05-06T12:40:43.537781Z"
+                writerId: kn9qux147clu4ckgs4o32siepdryatt6
+        m: []
+        python_version: 3.12.13
+        t:
+            "1":
+                - 1
+                - 5
+                - 11
+                - 49
+                - 51
+                - 53
+                - 71
+                - 96
+                - 100
+            "2":
+                - 1
+                - 5
+                - 11
+                - 49
+                - 51
+                - 53
+                - 71
+                - 96
+                - 100
+            "3":
+                - 2
+                - 17
+            "4": 3.12.13
+            "5": 0.25.1
+            "6": 5.3.0.dev0
+            "12": 0.25.1
+            "13": darwin-arm64

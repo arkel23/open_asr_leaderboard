@@ -1,0 +1,4 @@
+python-dotenv==1.2.2
+sarvamai
+tenacity==9.1.4
+cohere

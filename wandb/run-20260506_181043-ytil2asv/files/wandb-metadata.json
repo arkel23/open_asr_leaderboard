@@ -1,0 +1,34 @@
+{
+  "os": "macOS-15.7.3-arm64-arm-64bit",
+  "python": "CPython 3.12.13",
+  "startedAt": "2026-05-06T12:40:43.537781Z",
+  "program": "<python with no main file>",
+  "git": {
+    "remote": "git@github.com:arkel23/open_asr_leaderboard.git",
+    "commit": "c48797208f46225c4d8f4985521d679c6cc2ec96"
+  },
+  "email": "ewoorkargirish@gmail.com",
+  "root": "/Users/girishe/Documents/github_repos/open_asr_leaderboard",
+  "host": "Girishs-MacBook-Pro.local",
+  "executable": "/Users/girishe/Documents/github_repos/open_asr_leaderboard/voxtral_copy/openvox/bin/python",
+  "cpu_count": 12,
+  "cpu_count_logical": 12,
+  "disk": {
+    "/": {
+      "total": "494384795648",
+      "used": "123276922880"
+    }
+  },
+  "memory": {
+    "total": "25769803776"
+  },
+  "apple": {
+    "name": "Apple M4 Pro",
+    "ecpuCores": 4,
+    "pcpuCores": 8,
+    "gpuCores": 16,
+    "memoryGb": 24,
+    "ramTotalBytes": "25769803776"
+  },
+  "writerId": "kn9qux147clu4ckgs4o32siepdryatt6"
+}
